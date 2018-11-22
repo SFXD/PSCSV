@@ -1,0 +1,5 @@
+format,column
+regexmatchingformattoreplace,columntoreplacein
+^0$,column
+^#N/A$,column
+^null$,column

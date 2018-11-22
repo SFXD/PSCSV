@@ -1,0 +1,9 @@
+old,new
+valuetoreplace,valuethatneedsreplacing
+this,will
+replace,values
+only,in
+the,columns
+that,use
+this,mapping
+see,configuration

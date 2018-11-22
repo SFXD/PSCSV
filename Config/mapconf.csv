@@ -1,0 +1,4 @@
+map,column
+mapping.csv,columntoreplacein
+mapping.csv,othercolumntoreplacein
+othermapping.csv,whatevercolumntoreplacein
