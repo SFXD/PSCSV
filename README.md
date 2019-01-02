@@ -1,5 +1,5 @@
 # PSCSV
-![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/Version-1.0.1-blue.svg)
 
 A powershell script to help Salesforce admins and consultant to save tim and do data load operations without having to rely on Excel.
 
