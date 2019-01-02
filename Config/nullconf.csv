@@ -1,5 +1,4 @@
 format,column
-regexmatchingformattoreplace,columntoreplacein
-^0$,column
-^#N/A$,column
-^null$,column
+^0$,nullreplace
+^#N/A$,nullreplace
+^null$,nullreplace
