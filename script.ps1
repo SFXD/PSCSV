@@ -66,7 +66,7 @@ Import-csv "$configdir\dateconf.csv" |
         try{
             $inputfile | ForEach-Object {
                 $linenb = $linenb +1
-                $_.$column = $_.$column -replace $format, $output
+                $_.$column = [datetime]::parseexact($_.$column, $format, $null).ToString($output)
         }
         }catch{
         "error:"
