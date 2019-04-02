@@ -1,2 +1,2 @@
 column,format,output
-datereplace,"^(\d{2})(\d{2})(\d{4})$","$3-$2-$1"
+datereplace,"MMM-dd-yyyy","yyyy-mm-dd"
