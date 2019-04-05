@@ -1,2 +1,0 @@
-$csvinput=C:\path\to\inputfile.csv
-$csvoutput=C:\path\to\output.csv

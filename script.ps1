@@ -1,112 +1,161 @@
 <#
- Declares all Original variables. These need to be set before run.
- If file is in the same folder, simply reference the name.        
- Map tells the script what values (old) to replace with what (new)
- Csvinput is the file that you need treated                       
- Csvoutput is the file you generate at the end.                   
- Please remember to check the delimiter and encoding of the file  
- that you are importing.                                          
+ Declares all original variables from the configuration files. These need to be set before run.                                        
 #>
-$root=$PSScriptRoot
+$root = $PSScriptRoot
 $configdir = "$root\Config"
 $mapsconfigdir = "$root\Maps"
-$iovars="$configdir\iovars.txt"
-Get-Content $iovars | Foreach-Object{
-   $var = $_.Split('=')
-   $var[0] = $var[1]
-}
-$csvinput = $csvinput -replace '"', ""
-$inputfile = Import-CSV $csvinput -Encoding UTF8 -Delimiter ","
-echo "Finished initializing objects and data!"
+$toproot = (Split-Path $root -Parent)
+
+$vars = Get-Content -Path $configdir\vars.json | ConvertFrom-Json
+
+$inputfile = Import-CSV $vars."input-csv" -Encoding $vars."input-encoding" -Delimiter $vars."input-delimiter"
+
 
 <#
- Iterate through file and apply map.csv on a specific column.      
- Remember to specify which column.                                 
-#>
-Import-csv "$configdir\mapconf.csv" |
-    ForEach-Object {
-    $csvmap = join-path -path $mapsconfigdir -childpath $_.map
-    $column = $_.column
-    $mapping = Import-CSV $csvmap -Encoding UTF8 -Delimiter ","
-    $linenb = 0
-    try{
-        #create hash table
-        $mappingTable = @{}
-        foreach ($item in $mapping) {
-            $mappingTable.add($item.old,$item.new)
-        }
-
-        #replace values
-        $inputfile | ForEach-Object {
-            $linenb ++
-            $_.$column = $mappingTable[$_.$column]
-        }
-        }catch{
-        "error:"
-        echo "line" $linenb
-        echo "column" $_.$column
-        echo "old" $item.old
-        echo "new" $item.new
-        echo "Exception" $_.Exception.Message
-        pause
-    }
-    }
-echo "Done Remapping data !"
-
-<#
- Sanitize dates                                                     
+ Uses mapconf.csv and all mapfiles defined therein as configuration.
+ For each column defined, applies the map.csv defined.
+ the maps are always from column "old" to column "new".                           
 #>
 
-Import-csv "$configdir\dateconf.csv" |
-    ForEach-Object {
+function remap {
+    Import-csv "$configdir\mapconf.csv" |
+        ForEach-Object {
+        $csvmap = join-path -path $mapsconfigdir -childpath $_.map
         $column = $_.column
-        [regex]$format = $_.format
-        [regex]$output = $_.output
+        $mapping = Import-CSV $csvmap -Encoding UTF8 -Delimiter ","
         $linenb = 0
         try{
-            $inputfile | ForEach-Object {
-                $linenb = $linenb +1
-                $_.$column = [datetime]::parseexact($_.$column, $format, $null).ToString($output)
-        }
-        }catch{
-        "error:"
-        echo "line" $linenb
-        echo "column" $_.$column
-        echo "format" $format
-        echo "output" $output
-        echo "Exception" $_.Exception.Message
-        pause
-        }
-    }
-
-echo "Done reformatting dates !"
-
-<#
- Sanitize nulls                                                     
-#>
-
-Import-csv "$configdir\nullconf.csv" |
-    ForEach-Object {
-        $column = $_.column
-        [regex]$format = $_.format
-        $linenb = 0
-        try{
-            $inputfile | ForEach-Object {
-               $linenb = $linenb +1
-               $_.$column = $_.$column -replace $format, ''
+            foreach ($item in $mapping) {
+                $inputfile | ForEach-Object {
+                        $_.$column = $_.$column.replace($item.old,$item.new)
+                     }
+                }
+            }catch{
+            "error:"
+            echo "line" $linenb
+            echo "column" $_.$column
+            echo "format" $format
+            echo "output" $output
+            echo $Error
+            pause
             }
-        }catch{
-        "error:"
-        echo "line" $linenb
-        echo "column" $_.$column
-        echo "format" $format
-        echo "Exception" $_.Exception.Message        
-        pause
         }
     }
 
-echo "Done sanitizing null values !"
+
+
 <#
- Export results                                                   
+ Uses dateconf.csv as a configuration file.
+ In the Column defined, searches for a date in the format defined.
+ Format can be written using the standard dd MMMM yy or any variation thereof.
+ Always outputs salesforce-compatible yyyy-mm-dd.                                                 
 #>
-$inputfile | Export-CSV -Path $csvoutput -NoTypeInformation -Encoding UTF8 -Delimiter ","
+function clean-dates {
+    Import-csv "$configdir\dateconf.csv" |
+        ForEach-Object {
+            $column = $_.column
+            [String]$format = $_.format
+            $linenb = 0
+            try{
+                $inputfile | ForEach-Object {
+                    $linenb = $linenb +1
+                    $_.$column = [datetime]::parseexact($_.$column, $format, $null).ToString('yyyy-MM-dd')
+ 
+            }
+            }catch{
+            "error:"
+            echo "line" $linenb
+            echo "column" $_.$column
+            echo "format" $format
+            echo "output" $output
+            pause
+            }
+        }
+    }
+
+
+<#
+ Uses datetimeconf.csv as a configuration file.
+ In the Column defined, searches for a date in the format defined.
+ Format can be written using the standard dd MMMM yy hh mm ss or any variation thereof.
+ Always outputs salesforce-compatible yyyy-mm-ddTHH:mm:ssZ.                                                 
+#>
+function clean-datetimes {
+    Import-csv "$configdir\datetimeconf.csv" |
+        ForEach-Object {
+            $column = $_.column
+            [String]$format = $_.format
+            $linenb = 0
+            try{
+                $inputfile | ForEach-Object {
+                    $linenb = $linenb +1
+                    $_.$column = [datetime]::parseexact($_.$column, $format, $null).ToString('yyyy-MM-ddThh:mm:ss')
+ 
+            }
+            }catch{
+            "error:"
+            echo "line" $linenb
+            echo "column" $_.$column
+            echo "format" $format
+            echo "output" $output
+            pause
+            }
+        }
+    }
+
+
+
+<#
+ Uses nullconf.csv as a configuration file.
+ In the Column defined, matches the exact regex that is written in the format.
+ Matches are then replaced with "".                                                    
+#>
+function clean-nulls {
+    Import-csv "$configdir\nullconf.csv" |
+        ForEach-Object {
+            $column = $_.column
+            [regex]$format = $_.format
+            $linenb = 0
+            try{
+                $inputfile | ForEach-Object {
+                   $linenb = $linenb +1
+                   $_.$column = $_.$column -replace $format, ''
+                }
+            }catch{
+            "error:"
+            echo "line" $linenb
+            echo "column" $_.$column
+            echo "format" $format
+            pause
+            }
+        }
+    }
+    
+
+
+<#
+ Export results of all previous operations.                                                
+#>
+function export {
+    $inputfile | Export-CSV -Path $vars."output-csv" -NoTypeInformation -Encoding $vars."output-encoding" -Delimiter $vars."output-delimiter"
+}
+
+<#
+ Call the functions based on configuration so the script does stuff.
+ #>
+if ($vars."operation-remap") {
+    remap
+}
+
+if ($vars."operation-clean-dates") {
+    clean-dates
+}
+
+if ($vars."operation-clean-datetimes") {
+    clean-datetimes
+}
+
+if ($vars."operation-clean-nulls") {
+    clean-nulls
+}
+export

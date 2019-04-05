@@ -1,0 +1,12 @@
+{
+	"input-csv":"C:/path/to/input.csv",
+	"input-encoding":"UTF8",
+	"input-delimiter":",",
+	"output-csv":"C:/path/to/output.csv",
+	"output-encoding":"UTF8",
+	"output-delimiter":",",
+	"operation-remap":"true",
+	"operation-clean-dates":"true",
+	"operation-clean-datetimes":"true",
+	"operation-clean-nulls":"true"
+}

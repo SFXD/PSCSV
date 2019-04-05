@@ -1,2 +1,2 @@
-column,format,output
-datereplace,"MMM-dd-yyyy","yyyy-mm-dd"
+column,format
+datereplace,"MMM-dd-yyyy"

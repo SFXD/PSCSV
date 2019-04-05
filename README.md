@@ -1,22 +1,33 @@
 # PSCSV
-![Version](https://img.shields.io/badge/Version-1.1-blue.svg)
+![Version](https://img.shields.io/badge/Version-1.2-blue.svg)
 
-A powershell script to help Salesforce admins and consultant to save tim and do data load operations without having to rely on Excel.
+A powershell script to help Salesforce admins and consultant to save time and do data load operations without having to rely on Excel.
+
+Current list of stuff the script can do:
+	 - transcode a file from one encoding or separator to another
+	 - remap values in a column from one to another
+	 - reformat Dates from whatever format to the salesforce format
+	 - reformat Date Times from whatever format to the salesforce format
+	 - replace whatever you want in a column with "" - great if someone is sending you files with `null`.
 
 # Function
 
-This script takes no arguments. Due to how paths are parsed, it may be necessary to run it in a folder where the path does not have spaces in it.
+This script takes no arguments. The configuration is done via one JSON file and multiple CSV files, based on what you want to do.
+The Config dir contains the configuration files.
 
-The Config dir contains configuration files.
+* `vars.json` contains the basic config:
 
-* iovars.txt defines the input file and the output file
-* mapconf.csv defines which column in the csv should be replaced by which map (itself a csv file)
-* dateconf.csv defines a regex that is used to replace dates in a specified column, and the output it should be formatted in
-* nullconf.csv defines a regex that is used to select what to delete in a specified column.
+	- the path to your files (windows users, replace "\" with "/");
+	- the delimiter of the input and output files;
+	- the encoding of the input and output files;
+	- switches to control what the script will do.
 
-If the script encounters an error, it will dump the line number and the values of the mapping.
+* `mapconf.csv` defines which column in the csv should be replaced by which map (itself a csv file, stored in "maps" dir)
+* `dateconf.csv` defines a column to look in for a date that needs to be reformatted. It understands any variation of dd-MM-YYYY or d MMMM yy, _etc_.
+* `datetimeconf.csv` is the same as dateconf but reformats to datetime in format `YYYY-MM-DDTHH:MM:SSZ`.
+* `nullconf.csv` defines a regex that is used to select what to delete in a specified column.
 
-Be default the script expects comma-separated values in UTF 8 though you can change that by editing the script itself.
+If the script encounters an error, it will dump the line number and the values of the mapping, as well as the error, before pausing the script.
 
 # Advantages
 
