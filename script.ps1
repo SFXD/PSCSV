@@ -143,19 +143,19 @@ function export {
 <#
  Call the functions based on configuration so the script does stuff.
  #>
-if ($vars."operation-remap") {
+if ($vars."operation-remap" -eq "true") {
     remap
 }
 
-if ($vars."operation-clean-dates") {
+if ($vars."operation-clean-dates" -eq "true") {
     clean-dates
 }
 
-if ($vars."operation-clean-datetimes") {
+if ($vars."operation-clean-datetimes" -eq "true") {
     clean-datetimes
 }
 
-if ($vars."operation-clean-nulls") {
+if ($vars."operation-clean-nulls" -eq "true") {
     clean-nulls
 }
 export
