@@ -5,7 +5,7 @@ $root = $PSScriptRoot
 $configdir = "$root\Config"
 $mapsconfigdir = "$root\Maps"
 $toproot = (Split-Path $root -Parent)
-
+$Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 $vars = Get-Content -Path $configdir\vars.json | ConvertFrom-Json
 
 $inputfile = Import-CSV $vars."input-csv" -Encoding $vars."input-encoding" -Delimiter $vars."input-delimiter"
@@ -18,6 +18,7 @@ $inputfile = Import-CSV $vars."input-csv" -Encoding $vars."input-encoding" -Deli
 #>
 
 function remap {
+    echo "Entering Remap mode"
     Import-csv "$configdir\mapconf.csv" |
         ForEach-Object {
         $csvmap = join-path -path $mapsconfigdir -childpath $_.map
@@ -27,17 +28,17 @@ function remap {
         try{
             foreach ($item in $mapping) {
                 $inputfile | ForEach-Object {
+                        $linenb = $linenb +1
+                        [String]$currentitem = $_.$column
                         $_.$column = $_.$column.replace($item.old,$item.new)
                      }
                 }
             }catch{
             "error:"
-            echo "line" $linenb
-            echo "column" $_.$column
-            echo "format" $format
-            echo "output" $output
-            echo $Error
-            pause
+             echo "column": $column
+             echo "data" $currentitem
+             echo "line" $linenb
+             echo "error:" $Error
             }
         }
     }
@@ -51,6 +52,7 @@ function remap {
  Always outputs salesforce-compatible yyyy-mm-dd.                                                 
 #>
 function clean-dates {
+    echo "Entering Clean Dates mode"
     Import-csv "$configdir\dateconf.csv" |
         ForEach-Object {
             $column = $_.column
@@ -59,16 +61,16 @@ function clean-dates {
             try{
                 $inputfile | ForEach-Object {
                     $linenb = $linenb +1
-                    $_.$column = [datetime]::parseexact($_.$column, $format, $null).ToString('yyyy-MM-dd')
- 
+                    if ($_.$column -ne "NULL" -and $_.$column -ne "") {
+                        [String]$currentitem = $_.$column
+                        $_.$column = [datetime]::parseexact($_.$column, $format, $null).ToString('yyyy-MM-dd')
+                    }
             }
             }catch{
-            "error:"
-            echo "line" $linenb
-            echo "column" $_.$column
-            echo "format" $format
-            echo "output" $output
-            pause
+                echo "column": $column
+                echo "data" $currentitem
+                echo "line" $linenb
+                echo "error:" $Error
             }
         }
     }
@@ -81,25 +83,26 @@ function clean-dates {
  Always outputs salesforce-compatible yyyy-mm-ddTHH:mm:ssZ.                                                 
 #>
 function clean-datetimes {
+    echo "Entering Clean DateTimes mode"
     Import-csv "$configdir\datetimeconf.csv" |
         ForEach-Object {
             $column = $_.column
             [String]$format = $_.format
             $linenb = 0
-            try{
-                $inputfile | ForEach-Object {
-                    $linenb = $linenb +1
-                    $_.$column = [datetime]::parseexact($_.$column, $format, $null).ToString('yyyy-MM-ddThh:mm:ss')
- 
-            }
-            }catch{
-            "error:"
-            echo "line" $linenb
-            echo "column" $_.$column
-            echo "format" $format
-            echo "output" $output
-            pause
-            }
+                try{
+                    $inputfile | ForEach-Object {
+                        $linenb = $linenb +1
+                        if ($_.$column -ne "NULL" -and $_.$column -ne $null) {
+                        [String]$currentitem = $_.$column
+                            $_.$column = ([datetime]::parseexact($_.$column, $format, $null).ToString('yyyy-MM-ddThh:mm:ssZ'))
+                         }
+                }
+                }catch{
+                echo "column": $column
+                echo "data" $currentitem
+                echo "line" $linenb
+                echo "error:" $Error
+                }
         }
     }
 
@@ -111,6 +114,7 @@ function clean-datetimes {
  Matches are then replaced with "".                                                    
 #>
 function clean-nulls {
+    echo "Entering Clean Nulls mode"
     Import-csv "$configdir\nullconf.csv" |
         ForEach-Object {
             $column = $_.column
@@ -119,25 +123,49 @@ function clean-nulls {
             try{
                 $inputfile | ForEach-Object {
                    $linenb = $linenb +1
+                   [String]$currentitem = $_.$column
                    $_.$column = $_.$column -replace $format, ''
                 }
             }catch{
             "error:"
             echo "line" $linenb
-            echo "column" $_.$column
+            echo "column" $column
             echo "format" $format
+            echo "data" $currentitem
             pause
             }
         }
     }
-    
+
+<# Manual stuff goes here. Uncomment to use. Elements left for examples. Done after all functions run.#>
+
+function manual {
+<# Adds a column with a calculated value to CSV file 
+            $inputfile | ForEach-Object {
+                $linenb = $linenb +1
+                If ($_.LeadStatus -eq "R") {
+                    $_.LeadStatus = "Working"
+                    $_ | Add-Member -NotePropertyName Rating -NotePropertyValue Cold
+                }
+            }
+#>
+
+<# Merges two CSV files, filtering some data out based on column values, adding a new column with information, and exporting it directly. Should be done before any other operation.
+    Import-csv $CSVName -Encoding UTF8 -Delimiter "`t" | where {$_.COLUMN -eq "0"} | Select-Object *,@{Name='NewColumn';Expression={$_.COLUMN_A + $_.COLUMN_B}} |
+    Export-CSV -Path $output -Encoding UTF8 -Delimiter "," -NoTypeInformation -Append
+
+#>
+}
+
 
 
 <#
- Export results of all previous operations.                                                
+ Export results of all previous operations. Voodoo magic happens to remove the BOM.                                               
 #>
 function export {
     $inputfile | Export-CSV -Path $vars."output-csv" -NoTypeInformation -Encoding $vars."output-encoding" -Delimiter $vars."output-delimiter"
+    $temp = Get-Content $vars."output-csv"
+    $output = [System.IO.File]::WriteAllLines($vars."output-csv", $temp, $Utf8NoBomEncoding)
 }
 
 <#
@@ -158,4 +186,7 @@ if ($vars."operation-clean-datetimes" -eq "true") {
 if ($vars."operation-clean-nulls" -eq "true") {
     clean-nulls
 }
+
+manual
+
 export
