@@ -24,6 +24,7 @@ The Config dir contains the configuration files.
 	- the delimiter of the input and output files;
 	- the encoding of the input and output files;
 	- switches to control what the script will do. Switch the operations to "false" if you don't need remap for example. Operations are remap, clean-dates, clean-datetimes, clean-nulls.
+	- the culture code for parsexact - use this if you ahve text representation of dates. Accepts cultures in format en-US for example.
 
 * `mapconf.csv` defines which column in the csv should be replaced by which map (itself a csv file, stored in "maps" dir)
 * `dateconf.csv` defines a column to look in for a date that needs to be reformatted. It understands any variation of dd-MM-YYYY or d MMMM yy, _etc_.
