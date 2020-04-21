@@ -7,9 +7,8 @@ $mapsconfigdir = "$root\Maps"
 $toproot = (Split-Path $root -Parent)
 $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 $vars = Get-Content -Path $configdir\vars.json | ConvertFrom-Json
-
 $inputfile = Import-CSV $vars."input-csv" -Encoding $vars."input-encoding" -Delimiter $vars."input-delimiter"
-
+$parseculture = [Globalization.CultureInfo]::CreateSpecificCulture($vars."culture")
 
 <#
  Uses mapconf.csv and all mapfiles defined therein as configuration.
@@ -63,7 +62,7 @@ function clean-dates {
                     $linenb = $linenb +1
                     if ($_.$column -ne "NULL" -and $_.$column -ne "") {
                         [String]$currentitem = $_.$column
-                        $_.$column = [datetime]::parseexact($_.$column, $format, $null).ToString('yyyy-MM-dd')
+                        $_.$column = [datetime]::parseexact($_.$column, $format, $parseculture).ToString('yyyy-MM-dd')
                     }
             }
             }catch{
@@ -94,7 +93,7 @@ function clean-datetimes {
                         $linenb = $linenb +1
                         if ($_.$column -ne "NULL" -and $_.$column -ne $null) {
                         [String]$currentitem = $_.$column
-                            $_.$column = ([datetime]::parseexact($_.$column, $format, $null).ToString('yyyy-MM-ddThh:mm:ssZ'))
+                            $_.$column = ([datetime]::parseexact($_.$column, $format, $parseculture).ToString('yyyy-MM-ddThh:mm:ssZ'))
                          }
                 }
                 }catch{
