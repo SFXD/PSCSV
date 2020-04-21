@@ -1,5 +1,5 @@
 # PSCSV
-![Version](https://img.shields.io/badge/Version-1.2-blue.svg)
+![Version](https://img.shields.io/badge/Version-1.3-blue.svg)
 
 A powershell script to help Salesforce admins and consultant to save time and do data load operations without having to rely on Excel.
 
@@ -10,6 +10,8 @@ Current list of stuff the script can do:
 	 - reformat Dates from whatever format to the salesforce format
 	 - reformat Date Times from whatever format to the salesforce format
 	 - replace whatever you want in a column with "" - great if someone is sending you files with `null`.
+	 
+For reference, date formats are specified using [this standard](https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings?view=netframework-4.8)
 
 # Function
 
