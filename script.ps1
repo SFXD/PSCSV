@@ -10,6 +10,7 @@ $vars = Get-Content -Path $configdir\vars.json | ConvertFrom-Json
 $inputfile = Import-CSV $vars."input-csv" -Encoding $vars."input-encoding" -Delimiter $vars."input-delimiter"
 $parseculture = [Globalization.CultureInfo]::CreateSpecificCulture($vars."culture")
 
+
 <#
  Uses mapconf.csv and all mapfiles defined therein as configuration.
  For each column defined, applies the map.csv defined.
@@ -17,30 +18,36 @@ $parseculture = [Globalization.CultureInfo]::CreateSpecificCulture($vars."cultur
 #>
 
 function remap {
-    echo "Entering Remap mode"
+   Write-Host "Entering Remap Mode"
     Import-csv "$configdir\mapconf.csv" |
         ForEach-Object {
-        $csvmap = join-path -path $mapsconfigdir -childpath $_.map
-        $column = $_.column
-        $mapping = Import-CSV $csvmap -Encoding UTF8 -Delimiter ","
-        $linenb = 0
-        try{
-            foreach ($item in $mapping) {
-                $inputfile | ForEach-Object {
-                        $linenb = $linenb +1
-                        [String]$currentitem = $_.$column
-                        $_.$column = $_.$column.replace($item.old,$item.new)
-                     }
+            $csvmap = join-path -path $mapsconfigdir -childpath $_.map
+            $column = $_.column
+            $mapping = Import-CSV $csvmap -Encoding UTF8 -Delimiter ","
+            $linenb = 0
+            try{
+                #create hash table
+                $mappingTable = @{}
+                foreach ($item in $mapping) {
+                    $mappingTable.add($item.old,$item.new)
                 }
-            }catch{
-            "error:"
-             echo "column": $column
-             echo "data" $currentitem
-             echo "line" $linenb
-             echo "error:" $Error
+
+                #replace values
+                $inputfile | ForEach-Object {
+                    $linenb ++
+                    $_.$column = $mappingTable[$_.$column]
+                }
+                }catch{
+                "error:"
+                echo "line" $linenb
+                echo "column" $_.$column
+                echo "old" $item.old
+                echo "new" $item.new
+                echo "Exception" $_.Exception.Message
             }
         }
-    }
+    Write-Host  "Done Remapping data !"
+}
 
 
 
@@ -70,6 +77,7 @@ function clean-dates {
                 echo "data" $currentitem
                 echo "line" $linenb
                 echo "error:" $Error
+                pause
             }
         }
     }
@@ -162,11 +170,19 @@ function manual {
  Export results of all previous operations. Voodoo magic happens to remove the BOM.                                               
 #>
 function export {
+    write-Host "Exporting Results"
     $inputfile | Export-CSV -Path $vars."output-csv" -NoTypeInformation -Encoding $vars."output-encoding" -Delimiter $vars."output-delimiter"
-    $temp = Get-Content $vars."output-csv"
-    $output = [System.IO.File]::WriteAllLines($vars."output-csv", $temp, $Utf8NoBomEncoding)
 }
 
+<#
+  Cast the output to No-BOM format because Dataloader hates BOMs
+#>
+function no-bom {
+    Write-Host "Finished processing-outputing no-BOM file"
+    $temp = Get-Content $vars."output-csv"
+    $output = [System.IO.File]::WriteAllLines($vars."output-csv", $temp, $Utf8NoBomEncoding)
+
+}
 <#
  Call the functions based on configuration so the script does stuff.
  #>
@@ -189,3 +205,4 @@ if ($vars."operation-clean-nulls" -eq "true") {
 manual
 
 export
+no-bom
