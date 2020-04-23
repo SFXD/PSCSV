@@ -35,7 +35,9 @@ function remap {
                 #replace values
                 $inputfile | ForEach-Object {
                     $linenb ++
-                    $_.$column = $mappingTable[$_.$column]
+                    If( $mappingTable.ContainsKey($_.$column)) {
+                        $_.$column = $mappingTable[$_.$column]
+                    }
                 }
                 }catch{
                 "error:"
