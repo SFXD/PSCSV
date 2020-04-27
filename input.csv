@@ -1,10 +1,13 @@
-﻿useless,columns,arent,considered,datetimereplace,datereplace,nullreplace,testreplace,finalcolumn
-a,test,"sensiogej, ihhvise",segb,01.02.2018 22:00,01022017,#N/A,1,final
-a,test,"sensiogej, ihhvise",segb,01.12.2018 22:00,03042016,eoubseg,1,final
-a,test,"sensiogej, ihhvise",segb,01.03.2018 22:00,01022017,#N/A,1,final
-a,test,"sensiogej, ihhvise",segb,04.02.2018 22:00,05032015,null,2,final
-a,test,"sensiogej, ihhvise",segb,01.02.2018 22:00,01022017,eoubseg,1,final
-a,test,"sensiogej, ihhvise",segb,02.09.2000 22:00,,null,3,final
-a,test,"sensiogej, ihhvise",segb,01.02.2017 22:00,01022017,nullg,3,final
-a,test,"sensiogej, ihhvise",segb,01.02.2018 22:00,,eoubseg,2,final
-a,test,"sensiogej, ihhvise",segb,01.02.2018 22:00,,eoubseg,4,final
+﻿useless,columns,arent,considered,datetimereplace,datereplace,nullreplace,testreplace,fillnulls1,fillnulls2,final
+a,test,"sensiogej, ihhvise",segb,01.02.2018 22:00,01022017,#N/A,1,no replace,,final
+a,test,"sensiogej, ihhvise",segb,01.12.2018 22:00,03042016,eoubseg,1,,no replace,final
+a,test,"sensiogej, ihhvise",segb,01.03.2018 22:00,01022017,#N/A,1,noreplace,,final
+a,test,"sensiogej, ihhvise",segb,04.02.2018 22:00,05032015,null,2,,noreplace,final
+a,test,"sensiogej, ihhvise",segb,01.02.2018 22:00,01022017,eoubseg,1,,,final
+a,test,"sensiogej, ihhvise",segb,02.09.2000 22:00,,null,3,,,final
+a,test,"sensiogej, ihhvise",segb,01.02.2017 22:00,01022017,nullg,3,,,final
+a,test,"sensiogej, ihhvise",segb,01.02.2018 22:00,,eoubseg,2,,,final
+a,test,"sensiogej, ihhvise",segb,01.02.2018 22:00,,eoubseg,4,,,final
+a,test,"sensiogej, ihhvise",segb,01.02.2018 22:00,,eoubseg,4,,,final
+a,test,"sensiogej, ihhvise",segb,01.02.2018 22:00,,eoubseg,4,,,final
+a,test,"sensiogej, ihhvise",segb,01.02.2018 22:00,,eoubseg,4,,,final

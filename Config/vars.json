@@ -9,5 +9,6 @@
 	"operation-clean-dates":"true",
 	"operation-clean-datetimes":"true",
 	"operation-clean-nulls":"true",
+	"operation-fill-nulls":"true",
 	"culture":"de-DE"
 }

@@ -146,6 +146,37 @@ function clean-nulls {
         }
     }
 
+
+<#
+ Uses fillnullconf.csv as a configuration file.
+ In the specified column, checks if the data is null, and if so populates the static text specified.                                                    
+#>
+function fill-nulls {
+    echo "Entering Fill Nulls mode"
+    Import-csv "$configdir\fillnullsconf.csv" |
+        ForEach-Object {
+            $column = $_.column
+            $fillvalue = $_.fillvalue
+            $linenb = 0
+            try{
+                #replace values
+                $inputfile | ForEach-Object {
+                    $linenb ++
+                    If( $_.$column -eq "") {
+                        $_.$column = $fillvalue
+                    }
+                }
+                }catch{
+                "error:"
+                echo "line" $linenb
+                echo "column" $_.$column
+                echo "old" $item.old
+                echo "new" $item.new
+                echo "Exception" $_.Exception.Message
+            }
+        }
+    }
+
 <# Manual stuff goes here. Uncomment to use. Elements left for examples. Done after all functions run.#>
 
 function manual {
@@ -202,6 +233,10 @@ if ($vars."operation-clean-datetimes" -eq "true") {
 
 if ($vars."operation-clean-nulls" -eq "true") {
     clean-nulls
+}
+
+if ($vars."operation-fill-nulls" -eq "true") {
+    fill-nulls
 }
 
 manual
