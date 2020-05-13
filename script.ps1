@@ -66,21 +66,22 @@ function clean-dates {
             $column = $_.column
             [String]$format = $_.format
             $linenb = 0
-            try{
-                $inputfile | ForEach-Object {
+            $inputfile | ForEach-Object {
+                try{
                     $linenb = $linenb +1
-                    if ($_.$column -ne "NULL" -and $_.$column -ne "") {
+                    if ($_.$column -ne "" -and $_.$column -ne $null) {
                         [String]$currentitem = $_.$column
-                        $_.$column = [datetime]::parseexact($_.$column, $format, $parseculture).ToString('yyyy-MM-dd')
-                    }
+                        $_.$column = ([datetime]::parseexact($_.$column, $format, $parseculture).ToString('yyyy-MM-dd'))
+                        }
+                }catch{
+                    echo "column" $column
+                    echo "data" $currentitem
+                    echo "line" $linenb
+                    echo "error" $Error
+                    pause
+                }
             }
-            }catch{
-                echo "column": $column
-                echo "data" $currentitem
-                echo "line" $linenb
-                echo "error:" $Error
-                pause
-            }
+                
         }
     }
 
@@ -98,20 +99,22 @@ function clean-datetimes {
             $column = $_.column
             [String]$format = $_.format
             $linenb = 0
+            $inputfile | ForEach-Object {
                 try{
-                    $inputfile | ForEach-Object {
-                        $linenb = $linenb +1
-                        if ($_.$column -ne "NULL" -and $_.$column -ne $null) {
+                    $linenb = $linenb +1
+                    if ($_.$column -ne "" -and $_.$column -ne $null) {
                         [String]$currentitem = $_.$column
-                            $_.$column = ([datetime]::parseexact($_.$column, $format, $parseculture).ToString('yyyy-MM-ddThh:mm:ssZ'))
-                         }
-                }
+                        $_.$column = ([datetime]::parseexact($_.$column, $format, $parseculture).ToString('yyyy-MM-ddThh:mm:ssZ'))
+                        }
                 }catch{
-                echo "column": $column
-                echo "data" $currentitem
-                echo "line" $linenb
-                echo "error:" $Error
+                    echo "column" $column
+                    echo "data" $currentitem
+                    echo "line" $linenb
+                    echo "error" $Error
+                    pause
                 }
+            }
+                
         }
     }
 
